@@ -1,37 +1,33 @@
 @echo off
-chcp 65001 >nul
-echo === Speech2Text Whisper — Установка ===
+echo === Speech2Text Whisper - Setup ===
 echo.
 
-:: Проверить, установлен ли уже uv
 where uv >nul 2>&1
 if %errorlevel% neq 0 (
-    echo Устанавливаю uv...
+    echo Installing uv...
     powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
     if %errorlevel% neq 0 (
-        echo ОШИБКА: не удалось установить uv.
+        echo ERROR: failed to install uv.
         pause
         exit /b 1
     )
     echo.
-    echo uv установлен. Перезапустите setup.bat ещё раз.
-    echo (нужно перезапустить, чтобы uv появился в PATH)
+    echo uv installed. Please run setup.bat again.
     pause
     exit /b 0
 ) else (
-    echo uv уже установлен.
+    echo uv is already installed.
 )
 
 echo.
-echo Устанавливаю зависимости проекта (может занять несколько минут)...
+echo Installing dependencies (this may take a few minutes)...
 uv sync
 if %errorlevel% neq 0 (
-    echo ОШИБКА: не удалось установить зависимости.
+    echo ERROR: failed to install dependencies.
     pause
     exit /b 1
 )
 
 echo.
-echo === Установка завершена! ===
-echo Запустите run.bat чтобы открыть приложение.
+echo === Done! Run run.bat to start the app. ===
 pause
