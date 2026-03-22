@@ -236,18 +236,22 @@ class App(tk.Tk):
             q.put({"type": "progress", "data": percent})
 
         def on_segment(text):
-            q.put({"type": "log", "data": f"  {text}"})
+            preview = text[:50] + "..." if len(text) > 50 else text
+            q.put({"type": "log", "data": f"  {preview}"})
 
         try:
             import os
+            import time
             import transcriber  # ленивый импорт — torch грузится здесь, в фоне
 
             # Загрузка (или кеш) модели
             if model_size not in self._model_cache:
                 q.put({"type": "model_loading"})
+                t0 = time.time()
                 model = transcriber.load_model(model_size, log_callback=log)
                 self._model_cache[model_size] = model
                 q.put({"type": "model_ready"})
+                log(f"  Модель загружена за {time.time() - t0:.1f}с")
             else:
                 log(f"Модель '{model_size}' уже загружена.")
                 model = self._model_cache[model_size]
@@ -258,11 +262,13 @@ class App(tk.Tk):
                 q.put({"type": "file", "data": (i, total, name)})
                 log(f"[{i}/{total}] {name}")
 
+                t0 = time.time()
                 text = transcriber.transcribe_file(
                     model, file_path, language, on_progress, on_segment,
                 )
+                elapsed = time.time() - t0
                 out_path = transcriber.save_result(text, file_path, output_dir)
-                log(f"  Сохранено: {out_path}")
+                log(f"  Готово за {elapsed:.1f}с → {out_path}")
                 q.put({"type": "progress", "data": 0.0})  # сброс для следующего файла
 
             q.put({"type": "done"})
