@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.venv
+
+# assets
+assets/
+
+# Результаты транскрипции
+transcripts/
+
+# Настройки пользователя
+.speech2text_whisper.json
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
