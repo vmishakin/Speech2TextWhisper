@@ -117,9 +117,10 @@ class App(tk.Tk):
         ttk.Entry(settings, textvariable=self._outdir_var).grid(
             row=1, column=1, columnspan=2, sticky="ew", padx=6, pady=4,
         )
-        ttk.Button(settings, text="Обзор...", command=self._browse_output_dir).grid(
-            row=1, column=3, padx=(0, 6), pady=4,
-        )
+        outdir_btns = ttk.Frame(settings)
+        outdir_btns.grid(row=1, column=3, padx=(0, 6), pady=4)
+        ttk.Button(outdir_btns, text="Обзор...", command=self._browse_output_dir).pack(side="left", padx=(0, 4))
+        ttk.Button(outdir_btns, text="Открыть", command=self._open_output_dir).pack(side="left")
 
         # Кнопка запуска
         self._transcribe_btn = ttk.Button(self, text="Распознать", command=self._start)
@@ -165,6 +166,18 @@ class App(tk.Tk):
         path = filedialog.askdirectory(title="Выберите папку для результатов")
         if path:
             self._outdir_var.set(path)
+
+    def _open_output_dir(self):
+        import os, subprocess, platform
+        path = self._outdir_var.get().strip() or DEFAULT_OUTPUT_DIR
+        os.makedirs(path, exist_ok=True)
+        system = platform.system()
+        if system == "Windows":
+            os.startfile(path)
+        elif system == "Darwin":
+            subprocess.run(["open", path])
+        else:
+            subprocess.run(["xdg-open", path])
 
     def _update_transcribe_btn(self):
         has_files = self._file_listbox.size() > 0
@@ -231,8 +244,10 @@ class App(tk.Tk):
 
             # Загрузка (или кеш) модели
             if model_size not in self._model_cache:
+                q.put({"type": "model_loading"})
                 model = transcriber.load_model(model_size, log_callback=log)
                 self._model_cache[model_size] = model
+                q.put({"type": "model_ready"})
             else:
                 log(f"Модель '{model_size}' уже загружена.")
                 model = self._model_cache[model_size]
@@ -261,7 +276,17 @@ class App(tk.Tk):
                 msg = self._queue.get_nowait()
                 mtype = msg["type"]
 
-                if mtype == "log":
+                if mtype == "model_loading":
+                    self._progressbar.config(mode="indeterminate")
+                    self._progressbar.start(15)
+                    self._status_var.set("Загрузка модели...")
+
+                elif mtype == "model_ready":
+                    self._progressbar.stop()
+                    self._progressbar.config(mode="determinate")
+                    self._progress_var.set(0.0)
+
+                elif mtype == "log":
                     self._log_append(msg["data"])
 
                 elif mtype == "progress":
