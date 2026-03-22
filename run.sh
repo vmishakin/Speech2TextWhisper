@@ -1,2 +1,2 @@
 #!/bin/bash
-uv run python gui.py
+.venv/bin/python gui.py

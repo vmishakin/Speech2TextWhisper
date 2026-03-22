@@ -1,2 +1,2 @@
 @echo off
-uv run python gui.py
+.venv\Scripts\pythonw.exe gui.py
