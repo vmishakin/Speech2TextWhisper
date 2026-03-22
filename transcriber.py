@@ -1,7 +1,7 @@
 import os
 import glob
 from pathlib import Path
-from datetime import date
+from datetime import datetime
 from faster_whisper import WhisperModel
 
 
@@ -51,8 +51,8 @@ def save_result(text: str, file_path: str, output_dir: str) -> str:
     """
     os.makedirs(output_dir, exist_ok=True)
     stem = Path(file_path).stem
-    today = date.today().strftime("%Y-%m-%d")
-    out_path = os.path.join(output_dir, f"{stem}_{today}.txt")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    out_path = os.path.join(output_dir, f"{stem}_{timestamp}.txt")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(text)
     return out_path

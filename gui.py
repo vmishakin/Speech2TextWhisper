@@ -312,6 +312,7 @@ class App(tk.Tk):
                     self._progress_var.set(100.0)
                     self._status_var.set("Готово!")
                     self._log_append("─── Завершено ───")
+                    self._file_listbox.delete(0, "end")
                     self._update_transcribe_btn()
                     return
 
